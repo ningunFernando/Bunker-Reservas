@@ -2,7 +2,7 @@
 
 > **Idioma obligatorio: español (es-MX).** Docs, UI, mensajes y commits descriptivos.
 >
-> Última actualización: 2026-11-03 · Estado: **Fase 0 (fundación) ⬅️** · Hackatón: **1 hora** para una demo funcional (PoC)
+> Última actualización: 2026-11-03 · Estado: **Fase 0 ✅** · **Fase 1 ⬅️** · Hackatón: **1 hora** para una demo funcional (PoC)
 > 🔴 **Gates abiertos:** ninguno
 > 🟢 **Cerrados:** G1 stack (SvelteKit + Supabase en Vercel) · G2 cobro del cover simulado en el PoC · G3 alcance y
 > orden del PoC
@@ -253,10 +253,12 @@ Vienen de la experiencia con el stack; se confirman al construir.
 
 - **RLS de Supabase:** las tablas que se crean con SQL no traen RLS prendido, y la `anon key` es pública (va al
   navegador). Prende RLS en `events`, `customers` y `reservations` y escribe sus políticas en la misma migración.
-- **Variables de entorno en SvelteKit 3** (confirmado en sus tipos, 2026-11-03): ya no existen `$env/static/*` ni el
-  prefijo `PUBLIC_`. Cada variable se declara en `src/env.ts` con `defineEnvVars`. Las que llevan `public: true` se
-  importan de `$app/env/public` y **llegan al navegador**; las demás, de `$app/env/private`, que es solo del servidor.
-  La `service_role` key, si llega a hacer falta, va sin `public`. Una variable sin `schema` tiene que existir, aunque
+- **Variables de entorno en SvelteKit 3** (confirmado en sus tipos, 2026-11-03): ya no existe `$env/static/*`, y el
+  prefijo `PUBLIC_` ya no es lo que hace pública una variable. Cada variable se declara en `src/env.ts` con
+  `defineEnvVars`. Las que llevan `public: true` se importan de `$app/env/public` y **llegan al navegador**; las demás,
+  de `$app/env/private`, que es solo del servidor. Aquí los nombres conservan el `PUBLIC_` (`PUBLIC_SUPABASE_URL`,
+  `PUBLIC_SUPABASE_PUBLISHABLE_KEY`) porque así venía el `.env` del equipo, y sirve de recordatorio. La `service_role`
+  key, si llega a hacer falta, va sin `public` y sin el prefijo. Una variable sin `schema` tiene que existir, aunque
   esté vacía.
 - **SvelteKit 3 no trae `svelte.config.js`:** la config (incluido el adapter) vive en `vite.config.ts`. El alias de
   `src/lib` es `#lib`, no `$lib`.
@@ -279,8 +281,8 @@ Vienen de la experiencia con el stack; se confirman al construir.
 
 | | |
 |---|---|
-| **Fases completas** | — (Fase 0 casi lista: falta el `.env` de la BD del compañero y la prueba de conexión) |
-| **Siguiente** | Cerrar la Fase 0 con el `.env`; luego, la Fase 1 parte 1 (esquema y `reservar()`) |
+| **Fases completas** | ✅ Fase 0 (2026-11-03) |
+| **Siguiente** | Fase 1 parte 1: esquema y `reservar()`; la migración se corre en el SQL Editor de la BD del compañero |
 | **Gates** | 🟢 G1 stack · 🟢 G2 cobro simulado · 🟢 G3 alcance y orden del PoC |
 | **Deuda conocida** | — |
 
@@ -288,7 +290,7 @@ Vienen de la experiencia con el stack; se confirman al construir.
 
 1. ✅ Fernando aceptó las propuestas de 🟢 G2 y 🟢 G3. Las 🟡 de `docs/CONTEXTO.md § 5` siguen abiertas y no bloquean.
 2. ✅ Respuestas cerradas en `CONTEXTO.md § 5`, este archivo y el ROADMAP.
-3. ⬅️ Fase 0 en curso (`docs/ROADMAP.md`).
+3. ✅ Fase 0 terminada (`docs/ROADMAP.md`).
 
 La bitácora cronológica de abajo conserva el detalle y los caveats de cada fase. **Se agrega al final y no se
 reescribe.** Cada entrada lleva: las decisiones confirmadas con Fernando, lo que se hizo, cómo se verificó
@@ -338,3 +340,18 @@ reescribe.** Cada entrada lleva: las decisiones confirmadas con Fernando, lo que
   - El MCP de Supabase no llega a la BD del compañero, así que las migraciones se corren en su SQL Editor.
   - Crear un proyecto nuevo de Supabase quedó bloqueado por permisos y ya no hace falta.
   - Docker está apagado, así que no hay Supabase local.
+
+### 2026-11-03: Fase 0 cerrada (conexión con la BD)
+
+- **Decisiones confirmadas con Fernando:** el `.env` con los datos de la BD del compañero ya está listo.
+- **Qué se hizo:** el `.env` usaba `PUBLIC_SUPABASE_URL` y `PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Se ajustaron
+  `src/env.ts`, `src/lib/supabase.ts` y `.env.example` a esos nombres, sin tocar el `.env`. También se actualizó la
+  trampa de §7.4.
+- **Verificación:**
+  - `auth/v1/health` responde 200 con la llave.
+  - Un `select` a `events` responde `PGRST205` (la tabla no existe): la API acepta la llave y el esquema llega en la
+    Fase 1.
+  - `npm run check` sin errores, y `npm run dev` con el `.env` real responde 200 en `/` sin errores en el log.
+  - `.env` ignorado por git.
+- **⚠️ Caveats:** la prueba se hizo con un script de Node que lee el `.env`, no desde una página de la app, porque
+  todavía ninguna ruta usa Supabase. La primera ruta que lo use es la de la Fase 1.

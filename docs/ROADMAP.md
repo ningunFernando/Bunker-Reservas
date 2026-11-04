@@ -1,6 +1,6 @@
 # Roadmap: Reto BUNKER
 
-> Última actualización: 2026-11-03 · Fases **0 ⬅️** · Tiempo total: **60 min** · 🟢 G1, G2 y G3 cerrados
+> Última actualización: 2026-11-03 · Fases **0 ✅** · **1 ⬅️** · Tiempo total: **60 min** · 🟢 G1, G2 y G3 cerrados
 
 Cada fase es un bloque que se puede commitear, tiene un **bloque de tiempo** y un criterio de salida ("hecho
 cuando"). La Fase 1 se entrega **por partes**: el agente se detiene después del esquema y `reservar()` para un
@@ -10,14 +10,14 @@ Marcas: ✅ hecha · ⬅️ en curso · 🔴 gate abierto · 🟢 gate cerrado �
 
 El orden de las fases 1 y 2 y la sección "Si sobra tiempo" los confirmó Fernando con G3 (2026-11-03).
 
-## Fase 0: Fundación (min 0–10) ⬅️
+## Fase 0: Fundación (min 0–10) ✅
 
 - [x] 🟢 G2 y G3 confirmados con Fernando (2026-11-03, `CONTEXTO.md § 5`)
 - [x] `git init` y `.gitignore` (rama `main`; las de feature se abren al empezar la Fase 1)
 - [x] Scaffold con `npx sv create` (SvelteKit 3 + TypeScript) y `@sveltejs/adapter-vercel`
 - [x] Cliente de Supabase (`src/lib/supabase.ts`) y `.env.example` con valores falsos. La BD es el proyecto de
   Supabase de un compañero (Fernando, 2026-11-03), no uno nuevo
-- [ ] ⬅️ `.env` con la URL y la llave publicable de esa BD (lo llena Fernando) y prueba de conexión
+- [x] `.env` con la URL y la llave publicable de esa BD (lo llenó Fernando) y prueba de conexión (2026-11-03)
 - [x] `/impeccable init` corto → `PRODUCT.md`. `DESIGN.md` se genera con `/impeccable document` después del primer
   `craft` (modo hackatón: así sale de tokens reales y no de una semilla)
 - [x] `AGENTS.md § 2`, `§ 4` y `§ 5` con las versiones y los comandos reales
@@ -25,7 +25,7 @@ El orden de las fases 1 y 2 y la sección "Si sobra tiempo" los confirmó Fernan
 
 **Hecho cuando:** `npm run dev` levanta, `npm run check` sale sin errores y la app conecta con Supabase.
 
-## Fase 1: Reserva de eventos con cupo (min 10–40)
+## Fase 1: Reserva de eventos con cupo (min 10–40) ⬅️
 
 ### Parte 1: esquema y `reservar()` (min 10–25)
 
