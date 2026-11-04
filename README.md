@@ -18,3 +18,19 @@ npm run dev
 ```
 
 El resto de los comandos está en `AGENTS.md § 5`.
+
+| | Dirección (en local) |
+|---|---|
+| **Pública** (los clientes reservan) | http://localhost:5173/ |
+| **Privada** (panel del equipo) | http://localhost:5173/panel/entrar · cuenta de prueba en tu `.env` (`STAFF_TEST_EMAIL` / `STAFF_TEST_PASSWORD`) |
+
+## Guion de la demo
+
+1. **El cliente reserva.** En la página pública abre "Noche de cata", escribe nombre, Instagram y WhatsApp, elige
+   cuántos van y aparta: ve cuántos lugares quedan, el total del cover y el botón de pago (de ejemplo).
+2. **El cupo se respeta.** Pide más lugares de los que quedan: BUNKER le dice cuántos sí caben. Cuando se llena, el
+   evento sale con el sello "LLENO".
+3. **El equipo cobra.** En el panel, el equipo ve la reserva con su Instagram y su WhatsApp y la marca como pagada.
+
+Las reservas de la demo son reales en la BD: al terminar, bórralas (o úsalas con nombres que empiecen con `SMOKE` y
+corre `npm run smoke`, que limpia todo lo `SMOKE`).

@@ -2,14 +2,14 @@
 
 > **Idioma obligatorio: español (es-MX).** Docs, UI, mensajes y commits descriptivos.
 >
-> Última actualización: 2026-11-03 · Estado: **Fase 0 ✅** · **Fase 1 ✅** · **Fase 2 ✅** · **Fase 3 ⬅️** (demo) · Hackatón: **1 hora** para una demo funcional (PoC)
+> Última actualización: 2026-11-03 · Estado: **Fase 0 ✅** · **Fase 1 ✅** · **Fase 2 ✅** · **Fase 3 ✅** (demo local) · Hackatón: **1 hora** para una demo funcional (PoC)
 > 🔴 **Gates abiertos:** ninguno
 > 🟢 **Cerrados:** G1 stack (SvelteKit + Supabase en Vercel) · G2 cobro del cover simulado en el PoC · G3 alcance y
 > orden del PoC
 > **Recortes de alcance:** sin mapa de mesas ni elección de un lugar específico (2026-11-03). Fuera del PoC (⏸️,
 > G3, 2026-11-03): menú de cervezas y Excel en línea, Soft Restaurant, WhatsApp automático, pago real con la fintech
 > y migración desde Riservi. **La pasarela de pago la integra otro agente** (Fernando, 2026-11-03): aquí el cobro
-> se queda simulado.
+> se queda simulado. **La demo corre en local** (Fernando, 2026-11-03); el deploy a Vercel queda ⏸️.
 > El detalle vive en §7.3, §8 y `docs/ROADMAP.md`.
 
 Este proyecto es **autocontenido**: sus reglas generales salen de la plantilla de proyectos de `NonTaggedStuff`
@@ -151,6 +151,8 @@ Hackaton2/
 ├── scripts/smoke.mjs          ← smoke del cupo (npm run smoke)
 ├── scripts/smoke-panel.mjs    ← smoke del panel (npm run smoke:panel)
 ├── scripts/crear-equipo.mjs   ← alta de cuentas del equipo en Auth + staff (npm run equipo:crear)
+├── scripts/deploy-vercel.sh   ← ⏸️ deploy a Vercel (proyecto, variables públicas y --prod); todavía no se ha corrido
+├── .vercelignore              ← lo que nunca sube a Vercel (el .env con los secretos)
 ├── static/                    ← archivos públicos (robots.txt)
 └── src/
     ├── env.ts                 ← declaración de las variables de entorno (SvelteKit 3)
@@ -185,6 +187,7 @@ npm run smoke      # smoke del cupo contra la BD: N/N PASS; limpia sus datos SMO
 npm run smoke -- --app http://localhost:5173   # además prueba la form action con la app corriendo
 npm run equipo:crear                           # cuenta de prueba del panel (la guarda en .env) o: -- correo@real
 npm run smoke:panel -- --app http://localhost:5173   # smoke del panel: acceso, RLS, marcar pagada, salir
+sh scripts/deploy-vercel.sh                    # ⏸️ deploy a Vercel; lo corre Fernando (el permiso automático no deja al agente)
 ```
 
 La BD es un proyecto de Supabase de un compañero del equipo, que **no está en la cuenta de Fernando**: el MCP de
@@ -271,6 +274,9 @@ recorta:
    - **La pasarela de pago la integra otro agente** (Fernando, 2026-11-03). Aquí no se conecta la fintech, Mercado Pago
      ni ningún proveedor; el punto de enganche es el botón "Pagar … de cover" de la confirmación
      (`src/routes/eventos/[id]/+page.svelte`) y el cambio de `pendiente_pago` a `pagada`.
+   - ⏸️ **Deploy a Vercel** (Fernando, 2026-11-03: "lo hacemos todo por local"). La demo corre en
+     `http://localhost:5173`. Para retomarlo: `sh scripts/deploy-vercel.sh` (cuenta *kuchendevops*, equipo
+     *KuchenDevOps*, proyecto `bunker-reservas`); solo sube las dos variables públicas.
 2. **Antes de dar una fase por hecha** (modo hackatón):
    - smoke del camino feliz: reservar, ver que bajan los lugares que quedan, **intentar pasarse del cupo y ver el
      rechazo**;
@@ -342,8 +348,8 @@ Vienen de la experiencia con el stack; se confirman al construir.
 
 | | |
 |---|---|
-| **Fases completas** | ✅ Fase 0 · ✅ Fase 1 · ✅ Fase 2 (2026-11-03) |
-| **Siguiente** | Fase 3: deploy a Vercel (con OK de Fernando), smoke contra la URL y ensayo de la demo |
+| **Fases completas** | ✅ Fase 0 · ✅ Fase 1 · ✅ Fase 2 · ✅ Fase 3 en local (2026-11-03) |
+| **Siguiente** | Demo local: público en `http://localhost:5173/` y panel en `http://localhost:5173/panel/entrar`. Después: ⏸️ deploy a Vercel, `DESIGN.md` y lo de "si sobra tiempo" |
 | **Gates** | 🟢 G1 stack · 🟢 G2 cobro simulado · 🟢 G3 alcance y orden del PoC |
 | **Deuda conocida** | `DESIGN.md` sin generar (`/impeccable document`); no se corrieron `critique` ni `audit`; la foto es de stock (Unsplash), no de BUNKER |
 
@@ -536,3 +542,25 @@ reescribe.** Cada entrada lleva: las decisiones confirmadas con Fernando, lo que
     verificó por HTTP; falta que Fernando entre y lo vea.
   - No hay exportar a CSV (está en "si sobra tiempo").
   - Los eventos todavía se crean en la BD, no desde el panel.
+
+### 2026-11-03: Fase 3, demo en local (deploy a Vercel diferido)
+
+- **Decisiones confirmadas con Fernando:**
+  - Primero pidió desplegar en Vercel y entró a la CLI con la cuenta *kuchendevops*, equipo *KuchenDevOps*.
+  - Después decidió: "lo hacemos todo por local". El deploy queda ⏸️.
+  - El link público es `http://localhost:5173/` y el privado, `http://localhost:5173/panel/entrar`.
+- **Qué se hizo:**
+  - `.vercelignore` (el `.env` nunca sube) y `scripts/deploy-vercel.sh`: proyecto `bunker-reservas`, solo las dos
+    variables públicas y `--prod`. El permiso automático no dejó al agente crear el proyecto, así que el script lo
+    corre Fernando cuando se retome.
+  - En el navegador quedaron abiertas la página pública y el panel.
+  - El guion de la demo está en `README.md`.
+- **Verificación:**
+  - Contra `localhost:5173`, `npm run smoke -- --app` dio 15/15 y `npm run smoke:panel -- --app` dio 11/11.
+  - Después, la BD quedó con 1 evento, 0 clientes, 0 reservas y 1 cuenta del equipo.
+  - `/` y `/panel/entrar` responden 200; `/panel` sin sesión responde 303 a entrar.
+  - `scripts/deploy-vercel.sh` pasa `sh -n`. **No se ha ejecutado.**
+- **⚠️ Caveats:**
+  - La demo depende de que el servidor de desarrollo siga corriendo en esta Mac (`npm run dev`).
+  - En Vercel no existe todavía el proyecto `bunker-reservas` (revisado con `vercel project ls`).
+  - Fernando no ha entrado al panel con sesión en el navegador.

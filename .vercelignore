@@ -1,0 +1,20 @@
+# Lo que NO se sube a Vercel. El .env trae la secret key de Supabase, la contraseña de la BD y la de la cuenta de
+# prueba: en Vercel solo van las dos variables públicas (AGENTS.md § 7.4).
+.env
+.env.*
+!.env.example
+
+# Dependencias y builds: Vercel instala y compila por su cuenta.
+node_modules
+.svelte-kit
+.vercel
+build
+dist
+
+# Herramientas locales
+.claude
+.impeccable
+tmp
+scratch
+*.log
+.DS_Store

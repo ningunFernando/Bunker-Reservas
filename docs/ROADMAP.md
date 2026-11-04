@@ -1,6 +1,6 @@
 # Roadmap: Reto BUNKER
 
-> Última actualización: 2026-11-03 · Fases **0 ✅** · **1 ✅** · **2 ✅** · **3 ⬅️** · Tiempo total: **60 min** · 🟢 G1, G2 y G3 cerrados
+> Última actualización: 2026-11-03 · Fases **0 ✅** · **1 ✅** · **2 ✅** · **3 ✅** (demo local) · Tiempo total: **60 min** · 🟢 G1, G2 y G3 cerrados
 
 Cada fase es un bloque que se puede commitear, tiene un **bloque de tiempo** y un criterio de salida ("hecho
 cuando"). La Fase 1 se entrega **por partes**: el agente se detiene después del esquema y `reserve_spots()` para un
@@ -59,14 +59,15 @@ evento lleno se ve como agotado. Ningún error en la consola.
 **Hecho cuando:** una reserva hecha en la Fase 1 aparece en el panel, marcarla pagada cambia su estado y un visitante
 sin sesión no puede ver el panel ni leer clientes (probado por HTTP).
 
-## Fase 3: Demo (min 50–60) ⬅️
+## Fase 3: Demo (min 50–60) ✅ en local
 
-- [ ] Deploy a Vercel (**con el OK de Fernando**) con las variables de entorno
-- [ ] Smoke contra la URL desplegada; borrar los datos `SMOKE`
-- [ ] Guion de la demo en tres pasos: el cliente reserva, el evento se llena, el equipo marca pagada
-- [ ] Bitácora de `AGENTS.md § 8` y estas casillas al día
+- [ ] ⏸️ Deploy a Vercel (Fernando, 2026-11-03: la demo va en local). Queda listo `scripts/deploy-vercel.sh`
+- [x] Smokes contra la app local (`localhost:5173`): 15/15 y 11/11; los datos `SMOKE` se borran solos
+- [x] Guion de la demo en tres pasos (`README.md § Guion de la demo`)
+- [x] Bitácora de `AGENTS.md § 8` y estas casillas al día
 
-**Hecho cuando:** la demo corre en la URL pública desde un celular y el guion se ensayó una vez.
+**Hecho cuando:** la demo corre en local, en la página pública y en el panel, y el guion está escrito. (El criterio
+original pedía una URL pública; se cambió el 2026-11-03.)
 
 ## Si sobra tiempo
 
