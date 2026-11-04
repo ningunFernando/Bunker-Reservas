@@ -29,7 +29,7 @@ Lo que pidieron: que reservar un evento sea fácil, con un tono cercano y sin pe
 | Usuario | Rol en el sistema | Qué hace |
 |---|---|---|
 | Cliente (20 a 30 años, parejas y citas) | Público, sin cuenta | Ve los eventos y los lugares que quedan, reserva para N personas y recibe la confirmación con el total del cover |
-| Equipo de BUNKER (2 personas) | Staff, con cuenta (Supabase Auth) | Ve las reservas de cada evento y los lugares ocupados, marca una reserva como pagada |
+| Equipo de BUNKER (2 personas) | Staff, con cuenta (Supabase Auth) y alta en la tabla `staff` | Entra en `/panel/entrar`; ve las reservas de cada evento, los lugares ocupados y el contacto; marca una reserva como pagada |
 | Proveedores | ⏸️ fuera del PoC | Lo del Excel del menú; quién lo usa está en la § 5 |
 
 ## 3. Restricciones

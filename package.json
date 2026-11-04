@@ -11,7 +11,9 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"smoke": "node scripts/smoke.mjs",
-		"db:migrate": "drizzle-kit migrate"
+		"db:migrate": "drizzle-kit migrate",
+		"equipo:crear": "node scripts/crear-equipo.mjs",
+		"smoke:panel": "node scripts/smoke-panel.mjs"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-vercel": "^7.0.0",
@@ -30,6 +32,7 @@
 		"#lib/*": "./src/lib/*"
 	},
 	"dependencies": {
+		"@supabase/ssr": "0.12.7",
 		"@supabase/supabase-js": "2.118.0"
 	}
 }

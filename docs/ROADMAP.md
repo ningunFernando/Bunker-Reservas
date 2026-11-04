@@ -1,6 +1,6 @@
 # Roadmap: Reto BUNKER
 
-> Última actualización: 2026-11-03 · Fases **0 ✅** · **1 ✅** · **2 ⬅️** · Tiempo total: **60 min** · 🟢 G1, G2 y G3 cerrados
+> Última actualización: 2026-11-03 · Fases **0 ✅** · **1 ✅** · **2 ✅** · **3 ⬅️** · Tiempo total: **60 min** · 🟢 G1, G2 y G3 cerrados
 
 Cada fase es un bloque que se puede commitear, tiene un **bloque de tiempo** y un criterio de salida ("hecho
 cuando"). La Fase 1 se entrega **por partes**: el agente se detiene después del esquema y `reserve_spots()` para un
@@ -50,16 +50,16 @@ Fernando.**
 **Hecho cuando:** en el navegador, en vista móvil (375 × 812), se reserva de punta a punta, los lugares bajan y un
 evento lleno se ve como agotado. Ningún error en la consola.
 
-## Fase 2: Panel del equipo (min 40–50) ⬅️
+## Fase 2: Panel del equipo (min 40–50) ✅
 
-- [ ] Acceso con Supabase Auth (una cuenta de prueba)
-- [ ] Reservas por evento, con los lugares ocupados y los que quedan
-- [ ] Botón de marcar pagada
+- [x] Acceso con Supabase Auth (una cuenta de prueba, `npm run equipo:crear`; solo entra quien está en `staff`)
+- [x] Reservas por evento, con los lugares ocupados y los que quedan, y el contacto (Instagram y WhatsApp)
+- [x] Botón de marcar pagada
 
 **Hecho cuando:** una reserva hecha en la Fase 1 aparece en el panel, marcarla pagada cambia su estado y un visitante
 sin sesión no puede ver el panel ni leer clientes (probado por HTTP).
 
-## Fase 3: Demo (min 50–60)
+## Fase 3: Demo (min 50–60) ⬅️
 
 - [ ] Deploy a Vercel (**con el OK de Fernando**) con las variables de entorno
 - [ ] Smoke contra la URL desplegada; borrar los datos `SMOKE`

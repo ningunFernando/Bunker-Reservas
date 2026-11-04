@@ -2,7 +2,7 @@
 
 > **Idioma obligatorio: español (es-MX).** Docs, UI, mensajes y commits descriptivos.
 >
-> Última actualización: 2026-11-03 · Estado: **Fase 0 ✅** · **Fase 1 ✅** · **Fase 2 ⬅️** (panel) · Hackatón: **1 hora** para una demo funcional (PoC)
+> Última actualización: 2026-11-03 · Estado: **Fase 0 ✅** · **Fase 1 ✅** · **Fase 2 ✅** · **Fase 3 ⬅️** (demo) · Hackatón: **1 hora** para una demo funcional (PoC)
 > 🔴 **Gates abiertos:** ninguno
 > 🟢 **Cerrados:** G1 stack (SvelteKit + Supabase en Vercel) · G2 cobro del cover simulado en el PoC · G3 alcance y
 > orden del PoC
@@ -79,6 +79,7 @@ Dependencias y para qué sirve cada una:
 - `svelte-check`: el typecheck de TypeScript dentro de los componentes.
 - `@sveltejs/adapter-vercel`: el build para Vercel.
 - `@supabase/supabase-js`: el cliente de Supabase (`src/lib/supabase.ts`).
+- `@supabase/ssr` (0.12.7, exacta): la sesión del equipo en cookies del servidor (`src/hooks.server.ts`).
 - `drizzle-kit`, `drizzle-orm` y `pg` (desarrollo, versiones exactas 0.31.11, 0.45.4 y 8.23.1): corren las migraciones
   con `npm run db:migrate`; `pg` también lo usa la verificación por SQL. La app no usa Drizzle para consultar.
 
@@ -148,9 +149,12 @@ Hackaton2/
 │   └── referencias/           ← notas originales de la presentación del reto (fuente de verdad)
 ├── supabase/migrations/       ← el esquema de la BD, fuente de verdad (SQL + meta/_journal.json de Drizzle)
 ├── scripts/smoke.mjs          ← smoke del cupo (npm run smoke)
+├── scripts/smoke-panel.mjs    ← smoke del panel (npm run smoke:panel)
+├── scripts/crear-equipo.mjs   ← alta de cuentas del equipo en Auth + staff (npm run equipo:crear)
 ├── static/                    ← archivos públicos (robots.txt)
 └── src/
     ├── env.ts                 ← declaración de las variables de entorno (SvelteKit 3)
+    ├── hooks.server.ts        ← cliente de Supabase por petición con la sesión en cookies (locals.supabase, locals.getUser)
     ├── app.html · app.d.ts
     ├── app.css                ← tokens (kraft, tinta, sello verde agua y rojo) y estilos base
     ├── lib/supabase.ts        ← cliente de Supabase con la llave publicable
@@ -162,7 +166,8 @@ Hackaton2/
     └── routes/
         ├── +layout.svelte     ← encabezado, aviso de privacidad de ejemplo y crédito de la foto
         ├── +page.svelte       ← portada: foto, sello y los eventos como boletos
-        └── eventos/[id]/      ← reserva: formulario, errores con voz BUNKER, confirmación y "lleno"
+        ├── eventos/[id]/      ← reserva: formulario, errores con voz BUNKER, confirmación y "lleno"
+        └── panel/             ← panel del equipo: entrar/ (login), reservas por evento, marcar pagada, salir
 ```
 
 ## 5. Comandos de desarrollo
@@ -178,6 +183,8 @@ npm run build      # compilar para Vercel
 npm run db:migrate # aplica las migraciones pendientes de supabase/migrations/ (Drizzle)
 npm run smoke      # smoke del cupo contra la BD: N/N PASS; limpia sus datos SMOKE
 npm run smoke -- --app http://localhost:5173   # además prueba la form action con la app corriendo
+npm run equipo:crear                           # cuenta de prueba del panel (la guarda en .env) o: -- correo@real
+npm run smoke:panel -- --app http://localhost:5173   # smoke del panel: acceso, RLS, marcar pagada, salir
 ```
 
 La BD es un proyecto de Supabase de un compañero del equipo, que **no está en la cuenta de Fernando**: el MCP de
@@ -320,6 +327,13 @@ Vienen de la experiencia con el stack; se confirman al construir.
   inválido) y `use:enhance` lo pide con `fetch`.
 - **Las reservas que haces en el navegador son reales:** usa un nombre con `SMOKE` y bórralas al terminar.
 
+- **SvelteKit 3 movió los tipos de hooks:** `Handle` se importa de `@sveltejs/kit/hooks`, no de `@sveltejs/kit`.
+- **Sesión del panel:** en el servidor se usa `locals.getUser()` (valida el token con Supabase Auth), nunca solo
+  `getSession()`, que confía en la cookie. Ser "usuario" no basta: el panel y la RLS piden estar en `staff`
+  (`is_staff()`), porque cualquiera puede registrarse en Supabase Auth.
+- **Probar el panel en el navegador:** el login manda la contraseña a Supabase Auth (fuera de localhost); un agente no
+  la escribe en el navegador. Se prueba con `npm run smoke:panel` y Fernando entra con las credenciales de su `.env`.
+
 <!-- Agrega aquí las ⚠️ trampas nuevas que vayas descubriendo (las que ahorran horas). -->
 
 ## 8. Estado actual
@@ -328,8 +342,8 @@ Vienen de la experiencia con el stack; se confirman al construir.
 
 | | |
 |---|---|
-| **Fases completas** | ✅ Fase 0 · ✅ Fase 1 (2026-11-03) |
-| **Siguiente** | Fase 2: panel del equipo (Supabase Auth, tabla `staff`, reservas por evento, marcar pagada) |
+| **Fases completas** | ✅ Fase 0 · ✅ Fase 1 · ✅ Fase 2 (2026-11-03) |
+| **Siguiente** | Fase 3: deploy a Vercel (con OK de Fernando), smoke contra la URL y ensayo de la demo |
 | **Gates** | 🟢 G1 stack · 🟢 G2 cobro simulado · 🟢 G3 alcance y orden del PoC |
 | **Deuda conocida** | `DESIGN.md` sin generar (`/impeccable document`); no se corrieron `critique` ni `audit`; la foto es de stock (Unsplash), no de BUNKER |
 
@@ -487,3 +501,38 @@ reescribe.** Cada entrada lleva: las decisiones confirmadas con Fernando, lo que
   - La foto es de stock, no de BUNKER.
   - Los textos de la portada ("No se ve desde la calle. Se aparta desde aquí.") los escribió el agente con la voz de
     `PRODUCT.md`; Fernando no los ha revisado.
+
+### 2026-11-03: Fase 2 (panel del equipo)
+
+- **Decisiones confirmadas con Fernando:** seguir con la Fase 2.
+- **Decisiones técnicas (sin gate):**
+  - Sesión en cookies con `@supabase/ssr` en `hooks.server.ts`. En el servidor siempre se valida con `getUser()`.
+  - Solo entra quien está en `staff` (403 para cualquier otra cuenta), y la RLS lo repite en la BD.
+  - El panel usa el register `product`: una sola familia, escala fija y una tabla que en el celular pasa a bloques.
+  - Enlaces a `instagram.com/<usuario>` y `wa.me/<número>` para que el equipo contacte al cliente.
+  - "Marcar pagada" solo cambia una reserva `pendiente_pago`; repetirlo responde 409.
+  - Cuenta de prueba `equipo@bunker.test` con contraseña al azar, solo en el `.env` (no en docs ni en el chat).
+- **Qué se hizo:**
+  - `src/hooks.server.ts` y `src/app.d.ts` (tipos de `locals`).
+  - `src/routes/panel/` y `src/routes/panel/entrar/`.
+  - `scripts/crear-equipo.mjs` (`npm run equipo:crear`) y `scripts/smoke-panel.mjs` (`npm run smoke:panel`).
+- **Verificación:**
+  - `npm run smoke:panel -- --app` con **11/11 PASS**:
+    - sin sesión, el panel manda a entrar (303);
+    - una contraseña mala no entra;
+    - el equipo entra;
+    - se ven la reserva con su contacto y los lugares ocupados y que quedan;
+    - marcar pagada cambia la BD, y repetirlo da 409;
+    - una cuenta que no es del equipo recibe 403 y por la API no lee clientes ni cambia reservas;
+    - salir cierra la sesión;
+    - la limpieza no deja eventos, clientes ni cuentas SMOKE.
+  - `npm run smoke -- --app` sigue en 15/15 y `npm run check` sale sin errores.
+  - En el navegador, la pantalla de entrada en el celular, y `/panel` sin sesión manda ahí.
+- **🐛 Encontrados y arreglados:**
+  - `Handle` ya no se exporta de `@sveltejs/kit` en SvelteKit 3.
+  - El smoke buscaba el conteo de ocupados sin contar los atributos `class` del HTML.
+- **⚠️ Caveats:**
+  - El agente no vio el panel con sesión en el navegador: la contraseña va a Supabase Auth y no la escribe ahí. Lo
+    verificó por HTTP; falta que Fernando entre y lo vea.
+  - No hay exportar a CSV (está en "si sobra tiempo").
+  - Los eventos todavía se crean en la BD, no desde el panel.
