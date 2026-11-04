@@ -2,13 +2,14 @@
 
 > **Idioma obligatorio: español (es-MX).** Docs, UI, mensajes y commits descriptivos.
 >
-> Última actualización: 2026-11-03 · Estado: **Fase 0 ✅** · **Fase 1 ⬅️** · Hackatón: **1 hora** para una demo funcional (PoC)
+> Última actualización: 2026-11-03 · Estado: **Fase 0 ✅** · **Fase 1 ✅** · **Fase 2 ⬅️** (panel) · Hackatón: **1 hora** para una demo funcional (PoC)
 > 🔴 **Gates abiertos:** ninguno
 > 🟢 **Cerrados:** G1 stack (SvelteKit + Supabase en Vercel) · G2 cobro del cover simulado en el PoC · G3 alcance y
 > orden del PoC
 > **Recortes de alcance:** sin mapa de mesas ni elección de un lugar específico (2026-11-03). Fuera del PoC (⏸️,
 > G3, 2026-11-03): menú de cervezas y Excel en línea, Soft Restaurant, WhatsApp automático, pago real con la fintech
-> y migración desde Riservi.
+> y migración desde Riservi. **La pasarela de pago la integra otro agente** (Fernando, 2026-11-03): aquí el cobro
+> se queda simulado.
 > El detalle vive en §7.3, §8 y `docs/ROADMAP.md`.
 
 Este proyecto es **autocontenido**: sus reglas generales salen de la plantilla de proyectos de `NonTaggedStuff`
@@ -88,7 +89,8 @@ alternativas descartadas están en `CONTEXTO.md § 4`.
 
 ## 3. Arquitectura
 
-Las rutas son una **propuesta**; se confirman al construir la Fase 1.
+Las rutas de `/` y `/eventos/[id]` ya existen (Fase 1); `/panel` es de la Fase 2. La confirmación se muestra en la
+misma página de la reserva, no en `/reserva/[id]` (2026-11-03: sin una ruta ni una función de BD de más).
 
 ```
  Cliente (celular)                              Equipo BUNKER (2 personas)
@@ -96,8 +98,8 @@ Las rutas son una **propuesta**; se confirman al construir la Fase 1.
        ▼                                                  ▼
 ┌──────────────────── App SvelteKit (Vercel) ───────────────────────┐
 │ /                eventos con los lugares que quedan ("12 de 35")  │
-│ /eventos/[id]    formulario: nombre, WhatsApp, número de personas │
-│ /reserva/[id]    confirmación, total del cover y link de pago (G2)│
+│ /eventos/[id]    formulario: nombre, Instagram, WhatsApp, personas│
+│   └ confirmación en la misma página: total y pago de ejemplo (G2) │
 │ /panel           reservas por evento · marcar pagada (Auth)       │
 └───────────────────────────────┬───────────────────────────────────┘
                                 │ form actions (+page.server.ts), solo en el servidor
@@ -128,8 +130,9 @@ Hackaton2/
 ├── CLAUDE.md                  ← puente para Claude Code (@AGENTS.md)
 ├── README.md                  ← portada: qué es y cómo arrancarlo
 ├── PRODUCT.md                 ← contexto de producto para impeccable (2026-11-03)
-├── DESIGN.md                  (pendiente: /impeccable document después del primer craft, Fase 1)
+├── DESIGN.md                  (pendiente: /impeccable document sobre la UI ya construida)
 ├── .gitignore · .npmrc · .env.example (valores falsos; el .env real no se versiona)
+├── .claude/launch.json        ← servidor de desarrollo para el panel de navegador de Claude Code
 ├── package.json               ← scripts y dependencias (versiones en package-lock.json)
 ├── vite.config.ts             ← config de SvelteKit 3 y adapter de Vercel (no hay svelte.config.js)
 ├── drizzle.config.ts          ← Drizzle Kit: corre las migraciones de supabase/migrations/
@@ -149,12 +152,17 @@ Hackaton2/
 └── src/
     ├── env.ts                 ← declaración de las variables de entorno (SvelteKit 3)
     ├── app.html · app.d.ts
+    ├── app.css                ← tokens (kraft, tinta, sello verde agua y rojo) y estilos base
     ├── lib/supabase.ts        ← cliente de Supabase con la llave publicable
     ├── lib/events.ts          ← eventos con los lugares que quedan
     ├── lib/phone.ts           ← normaliza teléfonos a E.164
+    ├── lib/instagram.ts       ← normaliza el usuario de Instagram (sin @, minúsculas)
+    ├── lib/format.ts          ← dinero y fechas en es-MX, hora de la Ciudad de México
+    ├── lib/components/        ← Seal (el sello) y SeatMeter (lugares como perforaciones de boleto)
     └── routes/
-        ├── +page.svelte       ← por ahora, la bienvenida del scaffold
-        └── eventos/[id]/      ← carga del evento y form action que llama a reserve_spots() (página provisional)
+        ├── +layout.svelte     ← encabezado, aviso de privacidad de ejemplo y crédito de la foto
+        ├── +page.svelte       ← portada: foto, sello y los eventos como boletos
+        └── eventos/[id]/      ← reserva: formulario, errores con voz BUNKER, confirmación y "lleno"
 ```
 
 ## 5. Comandos de desarrollo
@@ -186,7 +194,8 @@ El detalle está en [`docs/CONVENCIONES.md`](docs/CONVENCIONES.md).
    aplicadas no se editan. Si cambia el esquema, se actualiza `CONTEXTO.md § 4.1` en el mismo cambio.
 4. **Dinero en centavos** (enteros, MXN); se muestra como `$150.00 MXN`.
 5. **Fechas en `timestamptz`**; se muestran en la zona `America/Mexico_City`.
-6. **Teléfonos en formato E.164** (`+52…`).
+6. **Teléfonos en formato E.164** (`+52…`) e **Instagram sin @ y en minúsculas**; los dos son obligatorios al reservar
+   (Fernando, 2026-11-03).
 7. Los datos de prueba llevan el prefijo `SMOKE` y se borran al terminar; los datos reales de clientes no entran al
    repo.
 
@@ -251,7 +260,10 @@ recorta:
      con Soft Restaurant, los mensajes automáticos por WhatsApp, el pago real con la fintech y la migración de datos
      desde Riservi.
    - **El cobro del cover es simulado** (G2, 2026-11-03): la reserva queda en `pendiente_pago`, la confirmación
-     muestra un link de pago de ejemplo y el equipo la marca como pagada en el panel.
+     muestra un botón de pago de ejemplo y el equipo la marca como pagada en el panel.
+   - **La pasarela de pago la integra otro agente** (Fernando, 2026-11-03). Aquí no se conecta la fintech, Mercado Pago
+     ni ningún proveedor; el punto de enganche es el botón "Pagar … de cover" de la confirmación
+     (`src/routes/eventos/[id]/+page.svelte`) y el cambio de `pendiente_pago` a `pagada`.
 2. **Antes de dar una fase por hecha** (modo hackatón):
    - smoke del camino feliz: reservar, ver que bajan los lugares que quedan, **intentar pasarse del cupo y ver el
      rechazo**;
@@ -300,6 +312,14 @@ Vienen de la experiencia con el stack; se confirman al construir.
 - **`at time zone` y `pg`:** `starts_at at time zone 'America/Mexico_City'` regresa un `timestamp` sin zona, y `pg` lo
   lee como hora local de la máquina. Para mostrar fechas, formatea el `timestamptz` en la app.
 
+- **El texto en círculo del sello se encima** si es más largo que la circunferencia. `Seal.svelte` usa
+  `textLength` para repartirlo exacto; las palabras de más de 3 letras al centro ("LLENO") van más chicas.
+- **Perforaciones de un cupo chico:** con `1fr` por lugar, un evento de 2 lugares pintaba dos círculos gigantes. El
+  ancho del medidor se limita a ~1rem por lugar.
+- **Un 400 en la consola al probar errores es esperado:** la form action responde `fail(400)` (por ejemplo, un WhatsApp
+  inválido) y `use:enhance` lo pide con `fetch`.
+- **Las reservas que haces en el navegador son reales:** usa un nombre con `SMOKE` y bórralas al terminar.
+
 <!-- Agrega aquí las ⚠️ trampas nuevas que vayas descubriendo (las que ahorran horas). -->
 
 ## 8. Estado actual
@@ -308,10 +328,10 @@ Vienen de la experiencia con el stack; se confirman al construir.
 
 | | |
 |---|---|
-| **Fases completas** | ✅ Fase 0 (2026-11-03) |
-| **Siguiente** | ⏸️ Checkpoint con Fernando; luego, la Fase 1 parte 2 (UI de la reserva con `/impeccable craft`) |
+| **Fases completas** | ✅ Fase 0 · ✅ Fase 1 (2026-11-03) |
+| **Siguiente** | Fase 2: panel del equipo (Supabase Auth, tabla `staff`, reservas por evento, marcar pagada) |
 | **Gates** | 🟢 G1 stack · 🟢 G2 cobro simulado · 🟢 G3 alcance y orden del PoC |
-| **Deuda conocida** | — |
+| **Deuda conocida** | `DESIGN.md` sin generar (`/impeccable document`); no se corrieron `critique` ni `audit`; la foto es de stock (Unsplash), no de BUNKER |
 
 ### ✅ Primera tarea del primer chat en el proyecto (terminada el 2026-11-03)
 
@@ -419,3 +439,51 @@ reescribe.** Cada entrada lleva: las decisiones confirmadas con Fernando, lo que
   - La página de `/eventos/[id]` es provisional (sin diseño) y no se probó en el navegador; eso llega con la parte 2.
   - Las respuestas de error todavía son códigos (`no_capacity`, `invalid_phone`), sin la voz de BUNKER.
   - Falta crear la cuenta del equipo en `staff` (Fase 2).
+
+### 2026-11-03: Fase 1, parte 2 (UI de la reserva) e Instagram
+
+- **Decisiones confirmadas con Fernando:**
+  - Dirección visual "etiqueta y sello" (papel kraft, tinta oscura, sello verde agua) y una foto de stock de cerveza en
+    la portada.
+  - Al reservar se piden **Instagram y WhatsApp**, los dos obligatorios. Se interpretó así su "instagram + whatsapp
+    original"; si el Instagram debe ser opcional, es quitar `required` del campo y la validación en la action.
+  - **La pasarela de pago la integra otro agente** (§7.3; también quedó en la memoria del agente).
+- **Decisiones técnicas (sin gate):**
+  - Paleta en OKLCH alrededor de la semilla verde agua de `impeccable`, con contrastes medidos (los valores están en
+    `src/app.css`). El rojo solo va como relleno con texto blanco o como subrayado, nunca como texto chico.
+  - Fuentes de Google Fonts: Big Shoulders (títulos), Big Shoulders Stencil (letrero BUNKER) y Atkinson Hyperlegible
+    Next (texto, por WCAG AA).
+  - Foto de Unsplash `photo-1687771454203-97d0b08bbeb2` (tablero de cata sin logos), verificada (200), con `srcset`
+    y crédito "ilustrativa, no es BUNKER".
+  - La confirmación vive en la misma página de la reserva, sin `/reserva/[id]`.
+  - El Instagram se guarda sin @ y en minúsculas, y solo se llena si el cliente no tenía uno (migración 0001).
+  - La UI se hizo con `craft` directo: no hubo `shape` largo ni mocks, porque esta app no genera imágenes.
+- **Qué se hizo:**
+  - `src/app.css`, `src/lib/format.ts`, `src/lib/instagram.ts`, y `Seal.svelte` y `SeatMeter.svelte` en
+    `src/lib/components/`.
+  - La portada (`/`) y la reserva (`/eventos/[id]`).
+  - `supabase/migrations/0001_instagram_del_cliente.sql`, aplicada con `npm run db:migrate`.
+  - El smoke con Instagram y `.claude/launch.json`.
+- **Verificación:**
+  - `npm run smoke -- --app` con **15/15 PASS**, incluidos el Instagram inválido y la normalización por la form action.
+  - Normalización de Instagram: 5/5 casos. `npm run check` sin errores y `npm run build` con el adapter de Vercel.
+  - En el navegador, a 375 × 812 y 1280 × 800:
+    - la portada;
+    - la reserva con WhatsApp inválido (sale el error con voz BUNKER y se conservan los datos);
+    - la reserva válida (bajan los lugares de 35 a 32 y aparece la confirmación);
+    - el botón de pago de ejemplo;
+    - un evento lleno, en la portada y en su página.
+  - La única línea de error en la consola es el 400 esperado de la prueba de WhatsApp inválido.
+  - Los datos SMOKE del navegador se borraron; la BD quedó con 1 evento, 0 clientes y 0 reservas.
+- **🐛 Encontrados y arreglados:**
+  - El sello tapaba el texto de la portada, en el celular y en escritorio.
+  - Al aviso de privacidad le faltaba un espacio.
+  - El texto en círculo del sello se encimaba.
+  - Con un cupo chico, las perforaciones se volvían círculos gigantes.
+  - "LLENO" se salía del sello.
+- **⚠️ Caveats:**
+  - Falta `DESIGN.md` y no se corrieron `/impeccable critique` ni `audit`.
+  - La animación con "reducir movimiento" no se probó (está cubierta en `app.css`).
+  - La foto es de stock, no de BUNKER.
+  - Los textos de la portada ("No se ve desde la calle. Se aparta desde aquí.") los escribió el agente con la voz de
+    `PRODUCT.md`; Fernando no los ha revisado.

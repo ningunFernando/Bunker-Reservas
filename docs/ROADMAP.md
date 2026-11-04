@@ -1,6 +1,6 @@
 # Roadmap: Reto BUNKER
 
-> Última actualización: 2026-11-03 · Fases **0 ✅** · **1 ⬅️** · Tiempo total: **60 min** · 🟢 G1, G2 y G3 cerrados
+> Última actualización: 2026-11-03 · Fases **0 ✅** · **1 ✅** · **2 ⬅️** · Tiempo total: **60 min** · 🟢 G1, G2 y G3 cerrados
 
 Cada fase es un bloque que se puede commitear, tiene un **bloque de tiempo** y un criterio de salida ("hecho
 cuando"). La Fase 1 se entrega **por partes**: el agente se detiene después del esquema y `reserve_spots()` para un
@@ -25,7 +25,7 @@ El orden de las fases 1 y 2 y la sección "Si sobra tiempo" los confirmó Fernan
 
 **Hecho cuando:** `npm run dev` levanta, `npm run check` sale sin errores y la app conecta con Supabase.
 
-## Fase 1: Reserva de eventos con cupo (min 10–40) ⬅️
+## Fase 1: Reserva de eventos con cupo (min 10–40) ✅
 
 ### Parte 1: esquema y `reserve_spots()` (min 10–25) ✅
 
@@ -39,17 +39,18 @@ El orden de las fases 1 y 2 y la sección "Si sobra tiempo" los confirmó Fernan
 lugares que quedan, y dos reservas al mismo tiempo no pasan de 35. Los datos `SMOKE` se borran. → **Checkpoint con
 Fernando.**
 
-### Parte 2: UI de la reserva (min 25–40)
+### Parte 2: UI de la reserva (min 25–40) ✅
 
-- [ ] `/impeccable craft` de la lista de eventos con "quedan N de 35" y "agotado"
-- [ ] Formulario: nombre, WhatsApp y número de personas, con el error de cupo en la voz de BUNKER
-- [ ] Confirmación con el resumen, el total del cover (personas × cover) y el link de pago según G2
-- [ ] Aviso de privacidad de ejemplo, marcado como tal
+- [x] `/impeccable craft` (dirección "etiqueta y sello") de la lista de eventos con "quedan N de 35" y "agotado"
+- [x] Formulario: nombre, Instagram, WhatsApp y número de personas, con el error de cupo en la voz de BUNKER
+- [x] Confirmación con el resumen, el total del cover (personas × cover) y el link de pago según G2
+- [x] Aviso de privacidad de ejemplo, marcado como tal
+- [ ] `DESIGN.md` con `/impeccable document` (deuda; quedó pendiente)
 
 **Hecho cuando:** en el navegador, en vista móvil (375 × 812), se reserva de punta a punta, los lugares bajan y un
 evento lleno se ve como agotado. Ningún error en la consola.
 
-## Fase 2: Panel del equipo (min 40–50)
+## Fase 2: Panel del equipo (min 40–50) ⬅️
 
 - [ ] Acceso con Supabase Auth (una cuenta de prueba)
 - [ ] Reservas por evento, con los lugares ocupados y los que quedan
@@ -80,7 +81,7 @@ Lo primero que se recorta si no alcanza (`WORKFLOW.md § Modo hackatón`):
 - Menú de cervezas y Excel en línea para proveedores (falta saber quién lo usa, `CONTEXTO.md § 5`)
 - Integración con Soft Restaurant (menú de comidas)
 - Mensajes automáticos por WhatsApp (confirmación y recordatorio)
-- Pago real del cover con la fintech de BUNKER
+- Pago real del cover con la fintech de BUNKER: **lo integra otro agente** (Fernando, 2026-11-03)
 - Migración de datos desde Riservi
 
 **Recortado (no se hace):** mapa de mesas o elección de un lugar específico (Fernando, 2026-11-03).

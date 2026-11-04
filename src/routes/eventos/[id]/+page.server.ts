@@ -2,6 +2,7 @@ import { error, fail } from '@sveltejs/kit';
 import { supabase } from '#lib/supabase.js';
 import { getEvent } from '#lib/events.js';
 import { normalizePhoneMx } from '#lib/phone.js';
+import { normalizeInstagram } from '#lib/instagram.js';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -16,10 +17,18 @@ export const actions: Actions = {
 		const form = await request.formData();
 		const name = String(form.get('name') ?? '').trim();
 		const phoneInput = String(form.get('phone') ?? '');
+		const instagramInput = String(form.get('instagram') ?? '');
 		const partySize = Number(form.get('party_size'));
-		const values = { name, phone: phoneInput, party_size: String(form.get('party_size') ?? '') };
+		const values = {
+			name,
+			phone: phoneInput,
+			instagram: instagramInput,
+			party_size: String(form.get('party_size') ?? '')
+		};
 
 		if (!name) return fail(400, { ...values, error: 'missing_name' as const });
+		const instagram = normalizeInstagram(instagramInput);
+		if (!instagram) return fail(400, { ...values, error: 'invalid_instagram' as const });
 		const phone = normalizePhoneMx(phoneInput);
 		if (!phone) return fail(400, { ...values, error: 'invalid_phone' as const });
 		if (!Number.isInteger(partySize) || partySize < 1) {
@@ -30,6 +39,7 @@ export const actions: Actions = {
 			p_event_id: params.id,
 			p_name: name,
 			p_phone: phone,
+			p_instagram: instagram,
 			p_party_size: partySize
 		});
 
@@ -53,6 +63,6 @@ export const actions: Actions = {
 		}
 
 		const [reservation] = data as { reservation_id: string; remaining: number; total_cents: number }[];
-		return { success: true as const, reservation, partySize };
+		return { success: true as const, reservation, partySize, name };
 	}
 };

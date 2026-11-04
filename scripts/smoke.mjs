@@ -30,6 +30,7 @@ const reserve = (eventId, n, party) =>
 		p_event_id: eventId,
 		p_name: `SMOKE ${n}`,
 		p_phone: phone(n),
+		p_instagram: `smoke_${n}`,
 		p_party_size: party
 	});
 
@@ -86,9 +87,19 @@ try {
 		p_event_id: eventId,
 		p_name: 'SMOKE 4',
 		p_phone: '55 abc',
+		p_instagram: 'smoke_4',
 		p_party_size: 1
 	});
 	check('un teléfono que no es E.164 se rechaza', !!r4.error, r4.error?.code);
+
+	const r5 = await anon.rpc('reserve_spots', {
+		p_event_id: eventId,
+		p_name: 'SMOKE 5',
+		p_phone: phone(5),
+		p_instagram: 'No Vale!',
+		p_party_size: 1
+	});
+	check('un Instagram inválido se rechaza en la BD', !!r5.error, r5.error?.code);
 
 	const readRes = await anon.from('reservations').select('id');
 	const readCus = await anon.from('customers').select('id');
@@ -104,8 +115,12 @@ try {
 	check('el público no puede insertar reservas sin reserve_spots()', !!ins.error, ins.error?.code);
 
 	const again = await reserve(eventId, 1, 1);
-	const { count } = await admin.from('customers').select('id', { count: 'exact', head: true }).eq('phone', phone(1));
-	check('el mismo WhatsApp reutiliza al cliente', !again.error && count === 1, again.error?.message ?? `clientes con ese teléfono: ${count}`);
+	const { data: same } = await admin.from('customers').select('instagram').eq('phone', phone(1));
+	check(
+		'el mismo WhatsApp reutiliza al cliente y guarda su Instagram',
+		!again.error && same?.length === 1 && same[0].instagram === 'smoke_1',
+		again.error?.message ?? `clientes con ese teléfono: ${same?.length}, instagram ${same?.[0]?.instagram}`
+	);
 
 	// 10 reservas de 2 al mismo tiempo con 7 lugares libres: solo caben 3 y queda 1 para la app.
 	const parallel = await Promise.all(Array.from({ length: 10 }, (_, i) => reserve(eventId, 10 + i, 2)));
@@ -118,6 +133,7 @@ try {
 		const body = new FormData();
 		body.set('name', 'SMOKE app');
 		body.set('phone', '55 0000 0099');
+		body.set('instagram', '@SMOKE_App');
 		body.set('party_size', '5');
 		const res = await fetch(`${appUrl}/eventos/${eventId}`, {
 			method: 'POST',
@@ -134,7 +150,12 @@ try {
 			headers: { origin: appUrl, accept: 'application/json', 'x-sveltekit-action': 'true' }
 		});
 		const json2 = await res2.json();
-		check('la form action reserva y normaliza el teléfono', json2.type === 'success', `${json2.type} ${json2.status}`);
+		const { data: appCustomer } = await admin.from('customers').select('phone, instagram').eq('name', 'SMOKE app').single();
+		check(
+			'la form action reserva y normaliza teléfono e Instagram',
+			json2.type === 'success' && appCustomer?.phone === '+525500000099' && appCustomer?.instagram === 'smoke_app',
+			`${json2.type} ${json2.status} · ${appCustomer?.phone} · ${appCustomer?.instagram}`
+		);
 		check('después de la app ya no quedan lugares', (await remainingOf(eventId)) === 0);
 	}
 } catch (err) {

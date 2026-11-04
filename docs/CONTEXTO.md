@@ -68,12 +68,12 @@ se confirman con Fernando · ⚠️ la seguridad depende de escribir bien las po
 | Tabla | Campos | Notas |
 |---|---|---|
 | `events` | `id`, `title`, `description`, `starts_at` (`timestamptz`), `cover_cents`, `capacity` (35 por defecto) | Lo crea el equipo; en el PoC, un evento de ejemplo |
-| `customers` | `id`, `name`, `phone` (E.164, único), `email` (opcional), `created_at` | La base de clientes que hoy no existe |
+| `customers` | `id`, `name`, `phone` (E.164, único), `instagram` (sin @, minúsculas), `email` (opcional), `created_at` | La base de clientes que hoy no existe. Se reconoce al cliente por su WhatsApp; el Instagram se guarda si no tenía (migración 0001) |
 | `reservations` | `id`, `event_id`, `customer_id`, `party_size`, `status` (`pendiente_pago`, `pagada` o `cancelada`), `created_at` | Las reservas canceladas no ocupan lugares |
 | `staff` | `user_id` (cuenta de Supabase Auth), `created_at` | Solo estas cuentas ven clientes y reservas; sin ella, cualquiera que se registre en Supabase Auth podría leerlos |
 
 - **Lugares que quedan** = `capacity` − suma de `party_size` de las reservas no canceladas del evento.
-- **`reserve_spots(p_event_id, p_name, p_phone, p_party_size)`**: bloquea el evento, revisa los lugares que quedan, crea o
+- **`reserve_spots(p_event_id, p_name, p_phone, p_instagram, p_party_size)`**: bloquea el evento, revisa los lugares que quedan, crea o
   reutiliza al cliente e inserta la reserva, todo en una transacción. Si no caben, regresa un error con los lugares
   que quedan.
 - **`events_with_availability()`**: los eventos próximos con los lugares que quedan, para el público, sin exponer las
@@ -108,13 +108,15 @@ Al cerrarla: [x], fecha, la respuesta de Fernando y dónde aterrizó en código 
   reservar, para cuidar el misterio? Mientras no se sepa, el PoC usa un texto de ejemplo, marcado como tal.
 - [ ] 🟡 **Horario.** ¿"De 4 a 12" es de 16:00 a 24:00? ¿Los eventos son dentro de ese horario?
 - [ ] 🟡 **Reservas sin evento.** ¿También se reserva una mesa en un día normal, o solo eventos?
-- [ ] 🟡 **Datos del cliente.** ¿Qué se le pide: nombre y WhatsApp, también correo, edad (el lugar vende alcohol)?
+- [x] **Datos del cliente** (2026-11-03): nombre, **Instagram y WhatsApp**, los dos obligatorios. Aterrizó en la
+  migración 0001, la form action y el formulario. Sigue abierto 🟡 si se pide correo o edad (el lugar vende alcohol).
 - [ ] 🟡 **Reservas sin pagar.** ¿Caducan y liberan sus lugares? ¿Después de cuánto tiempo?
 - [ ] 🟡 **Tamaño de una reserva.** ¿Hay un máximo de personas por reserva?
 - [ ] 🟡 **El Excel del menú.** ¿Quién lo usa: los proveedores (para surtir), el equipo o los clientes (para ver qué
   cervezas hay hoy)?
 - [ ] 🟡 **Marca.** ¿Hay logo, colores o fotos del lugar para `/impeccable init`?
-- [ ] 🟡 **La fintech.** ¿Cuál es y si tiene una API o links de pago que se puedan generar?
+- [ ] 🟡 **La fintech.** ¿Cuál es y si tiene una API o links de pago que se puedan generar? **La pasarela de pago la
+  integra otro agente** (Fernando, 2026-11-03); esta pregunta se resuelve allá.
 - [ ] 🟡 **Riservi.** ¿El sistema lo reemplaza o convive con él un tiempo?
 - [x] **G1 Stack** (2026-11-03): SvelteKit + Supabase en Vercel. Fernando pidió "Next y Svelte"; se aclaró que
   SvelteKit cubre lo de Next en una sola app. Aterrizó en `AGENTS.md § 2` y el ADR 0001.
