@@ -16,7 +16,7 @@
 | ADR | `NNNN-titulo-kebab.md` | `docs/decisions/0001-stack-sveltekit-supabase.md` |
 | Rutas, carpetas y archivos de código | `kebab-case` | `src/routes/eventos/[id]/`, `capacity.ts` |
 | Tablas y columnas | `snake_case`, tablas en plural | `reservations.party_size` |
-| Migraciones | las que genera la CLI de Supabase | `supabase/migrations/<timestamp>_esquema.sql` |
+| Migraciones | Drizzle: `NNNN_slug.sql` más su entrada en `meta/_journal.json` | `supabase/migrations/0000_reservas_con_cupo.sql` |
 | Ramas | `feature/<nombre-kebab>` | `feature/reserva-con-cupo` |
 
 Las fechas de los docs van siempre en ISO `AAAA-MM-DD`.

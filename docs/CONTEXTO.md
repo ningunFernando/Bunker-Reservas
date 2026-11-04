@@ -63,26 +63,29 @@ Lo que pidieron: que reservar un evento sea fácil, con un tono cercano y sin pe
 garantiza con una transacción en Postgres · ⚠️ crear el proyecto de Supabase y el de Vercel son pasos externos que
 se confirman con Fernando · ⚠️ la seguridad depende de escribir bien las políticas de RLS (`AGENTS.md § 7.4`).
 
-### 4.1 Modelo de datos (propuesta; se confirma en la Fase 1)
+### 4.1 Modelo de datos (aplicado el 2026-11-03: `supabase/migrations/0000_reservas_con_cupo.sql`)
 
 | Tabla | Campos | Notas |
 |---|---|---|
 | `events` | `id`, `title`, `description`, `starts_at` (`timestamptz`), `cover_cents`, `capacity` (35 por defecto) | Lo crea el equipo; en el PoC, un evento de ejemplo |
 | `customers` | `id`, `name`, `phone` (E.164, único), `email` (opcional), `created_at` | La base de clientes que hoy no existe |
 | `reservations` | `id`, `event_id`, `customer_id`, `party_size`, `status` (`pendiente_pago`, `pagada` o `cancelada`), `created_at` | Las reservas canceladas no ocupan lugares |
+| `staff` | `user_id` (cuenta de Supabase Auth), `created_at` | Solo estas cuentas ven clientes y reservas; sin ella, cualquiera que se registre en Supabase Auth podría leerlos |
 
 - **Lugares que quedan** = `capacity` − suma de `party_size` de las reservas no canceladas del evento.
-- **`reservar(event_id, name, phone, party_size)`**: bloquea el evento, revisa los lugares que quedan, crea o
+- **`reserve_spots(p_event_id, p_name, p_phone, p_party_size)`**: bloquea el evento, revisa los lugares que quedan, crea o
   reutiliza al cliente e inserta la reserva, todo en una transacción. Si no caben, regresa un error con los lugares
   que quedan.
-- **RLS:** el público solo lee los eventos y los lugares que quedan, y reserva a través de `reservar()`. Solo el equipo
+- **`events_with_availability()`**: los eventos próximos con los lugares que quedan, para el público, sin exponer las
+  reservas.
+- **RLS:** el público solo lee los eventos y los lugares que quedan, y reserva a través de `reserve_spots()`. Solo el equipo
   lee clientes y reservas, y cambia su estado.
 
 ### 4.2 Flujo de reserva (propuesta)
 
 1. El cliente abre la lista de eventos y ve "quedan N de 35" (o "agotado").
 2. Elige un evento y escribe su nombre, su WhatsApp y cuántas personas van.
-3. El servidor llama a `reservar()`. Si no caben, le dice cuántos lugares quedan.
+3. El servidor llama a `reserve_spots()`. Si no caben, le dice cuántos lugares quedan.
 4. Confirmación: el resumen, el total del cover (personas × cover), el link de pago (G2) y cómo llegar (🟡 § 5).
 5. El equipo ve la reserva en `/panel` y la marca como pagada.
 

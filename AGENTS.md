@@ -67,6 +67,7 @@ y son la fuente de verdad.
 | Despliegue | Vercel con `@sveltejs/adapter-vercel` | 🟢 G1 (desplegar se confirma con Fernando) |
 | Diseño de UI | Skill `impeccable` | 🟢 ADR 0002 |
 | Calidad | `svelte-check` (tipos) y smoke del camino feliz | 🟢 Fase 0, 2026-11-03 |
+| Migraciones | Drizzle Kit, solo para correr el SQL de `supabase/migrations/` | 🟢 2026-11-03, lo pidió Fernando |
 
 Versiones fijadas en `package-lock.json` (2026-11-03): SvelteKit 3.1.1, Svelte 5.57.3, Vite 8.3.5, TypeScript 6.0.3,
 `@sveltejs/adapter-vercel` 7.0.2 y `@supabase/supabase-js` 2.118.0 (exacta). Node 24.
@@ -77,6 +78,8 @@ Dependencias y para qué sirve cada una:
 - `svelte-check`: el typecheck de TypeScript dentro de los componentes.
 - `@sveltejs/adapter-vercel`: el build para Vercel.
 - `@supabase/supabase-js`: el cliente de Supabase (`src/lib/supabase.ts`).
+- `drizzle-kit`, `drizzle-orm` y `pg` (desarrollo, versiones exactas 0.31.11, 0.45.4 y 8.23.1): corren las migraciones
+  con `npm run db:migrate`; `pg` también lo usa la verificación por SQL. La app no usa Drizzle para consultar.
 
 **Por qué este stack:** una sola app con UI y servidor (SvelteKit) es lo más rápido de levantar en una hora, y
 Supabase da la base de datos y el acceso del equipo sin montar un servidor propio. Fernando pidió "Next y Svelte"; se
@@ -100,14 +103,15 @@ Las rutas son una **propuesta**; se confirman al construir la Fase 1.
                                 │ form actions (+page.server.ts), solo en el servidor
                                 ▼
 ┌──────────────────────────── Supabase ─────────────────────────────┐
-│ events · customers · reservations          (RLS en todas)         │
-│ función reservar(): aparta lugares en una sola transacción        │
+│ events · customers · reservations · staff   (RLS en todas)        │
+│ reserve_spots(): aparta lugares en una sola transacción           │
+│ events_with_availability(): lugares que quedan, sin ver reservas  │
 └───────────────────────────────────────────────────────────────────┘
 ```
 
 **Principios:**
 
-- **El cupo se decide en la base de datos, no en el navegador.** La función `reservar()` revisa los lugares que
+- **El cupo se decide en la base de datos, no en el navegador.** La función `reserve_spots()` revisa los lugares que
   quedan y aparta los nuevos en la misma transacción; así dos reservas al mismo tiempo no pasan de 35.
 - **Las llaves privadas de Supabase solo viven en el servidor** (`$app/env/private`, form actions y
   `hooks.server.ts`).
@@ -128,6 +132,7 @@ Hackaton2/
 ├── .gitignore · .npmrc · .env.example (valores falsos; el .env real no se versiona)
 ├── package.json               ← scripts y dependencias (versiones en package-lock.json)
 ├── vite.config.ts             ← config de SvelteKit 3 y adapter de Vercel (no hay svelte.config.js)
+├── drizzle.config.ts          ← Drizzle Kit: corre las migraciones de supabase/migrations/
 ├── tsconfig.json
 ├── docs/
 │   ├── README.md              ← índice y orden de lectura
@@ -138,29 +143,37 @@ Hackaton2/
 │   ├── ROADMAP.md             ← fases con bloques de tiempo, casillas, gates y "hecho cuando"
 │   ├── decisions/             ← ADRs del proyecto
 │   └── referencias/           ← notas originales de la presentación del reto (fuente de verdad)
-├── supabase/migrations/       (pendiente: Fase 1) ← el esquema de la BD, fuente de verdad
+├── supabase/migrations/       ← el esquema de la BD, fuente de verdad (SQL + meta/_journal.json de Drizzle)
+├── scripts/smoke.mjs          ← smoke del cupo (npm run smoke)
 ├── static/                    ← archivos públicos (robots.txt)
 └── src/
     ├── env.ts                 ← declaración de las variables de entorno (SvelteKit 3)
     ├── app.html · app.d.ts
     ├── lib/supabase.ts        ← cliente de Supabase con la llave publicable
-    └── routes/                ← por ahora, la página de bienvenida del scaffold
+    ├── lib/events.ts          ← eventos con los lugares que quedan
+    ├── lib/phone.ts           ← normaliza teléfonos a E.164
+    └── routes/
+        ├── +page.svelte       ← por ahora, la bienvenida del scaffold
+        └── eventos/[id]/      ← carga del evento y form action que llama a reserve_spots() (página provisional)
 ```
 
 ## 5. Comandos de desarrollo
 
-Requisitos: Node 24 y un `.env` con los datos de Supabase (copia `.env.example`).
+Requisitos: Node 24 y un `.env` con los datos de Supabase (copia `.env.example`): la URL y la llave publicable para la
+app, `DIRECT_URL` (o `DATABASE_URL`, el Session pooler) para las migraciones y `SUPABASE_SECRET_KEY` para el smoke.
 
 ```bash
 npm install        # instalar
 npm run dev        # ejecutar en http://localhost:5173
 npm run check      # svelte-check (tipos)
 npm run build      # compilar para Vercel
-# smoke            # (pendiente, Fase 1) camino feliz de la reserva, incluido pasarse del cupo
+npm run db:migrate # aplica las migraciones pendientes de supabase/migrations/ (Drizzle)
+npm run smoke      # smoke del cupo contra la BD: N/N PASS; limpia sus datos SMOKE
+npm run smoke -- --app http://localhost:5173   # además prueba la form action con la app corriendo
 ```
 
-La BD es un proyecto de Supabase de un compañero del equipo, que **no está en la cuenta de Fernando**. Las
-migraciones de `supabase/migrations/` se corren en el SQL Editor de ese proyecto.
+La BD es un proyecto de Supabase de un compañero del equipo, que **no está en la cuenta de Fernando**: el MCP de
+Supabase no llega a ella. Las migraciones se aplican con `npm run db:migrate`, no pegándolas en el SQL Editor.
 
 ## 6. Convenciones
 
@@ -168,8 +181,9 @@ El detalle está en [`docs/CONVENCIONES.md`](docs/CONVENCIONES.md).
 
 1. Conventional Commits en español; un commit por parte entregada.
 2. Los secretos se quedan solo en `.env` o en el servidor; `.env.example` lleva valores falsos.
-3. **El esquema de la BD vive en `supabase/migrations/`.** Si cambia, se actualiza `CONTEXTO.md § 4.1` en el mismo
-   cambio.
+3. **El esquema de la BD vive en `supabase/migrations/`** y se aplica con `npm run db:migrate`. Una migración nueva es
+   un `NNNN_slug.sql` (con `--> statement-breakpoint` entre sentencias) más su entrada en `meta/_journal.json`; las
+   aplicadas no se editan. Si cambia el esquema, se actualiza `CONTEXTO.md § 4.1` en el mismo cambio.
 4. **Dinero en centavos** (enteros, MXN); se muestra como `$150.00 MXN`.
 5. **Fechas en `timestamptz`**; se muestran en la zona `America/Mexico_City`.
 6. **Teléfonos en formato E.164** (`+52…`).
@@ -273,6 +287,19 @@ Vienen de la experiencia con el stack; se confirman al construir.
 - **Recursos externos:** crear el proyecto de Supabase o desplegar a Vercel es visible fuera de esta máquina y puede
   costar; se confirma con Fernando antes.
 
+- **Imports de `#lib` con extensión:** el alias de SvelteKit 3 es un `imports` de Node (`"#lib/*": "./src/lib/*"`), que
+  no agrega extensiones. Se importa `#lib/phone.js` (aunque el archivo sea `.ts`); `#lib/phone` no lo encuentra
+  `svelte-check`.
+- **Drizzle parte el SQL por `--> statement-breakpoint`:** sin los separadores manda todo el archivo como una sola
+  consulta. Van entre cada sentencia de nivel superior, nunca dentro de un bloque `$$ … $$`.
+- **El SQL pegado en el SQL Editor no llegó a la BD** (2026-11-03): la API seguía sin la tabla. No se averiguó por qué;
+  desde entonces se migra con `npm run db:migrate`, que reporta el error exacto. Después de migrar se manda
+  `notify pgrst, 'reload schema'` para que la API vea los cambios al momento.
+- **Conexión a la BD:** se usa el Session pooler (`aws-…pooler.supabase.com:5432`, usuario `postgres.<ref>`). La
+  conexión directa (`db.<ref>.supabase.co`) es solo IPv6 en el plan gratis.
+- **`at time zone` y `pg`:** `starts_at at time zone 'America/Mexico_City'` regresa un `timestamp` sin zona, y `pg` lo
+  lee como hora local de la máquina. Para mostrar fechas, formatea el `timestamptz` en la app.
+
 <!-- Agrega aquí las ⚠️ trampas nuevas que vayas descubriendo (las que ahorran horas). -->
 
 ## 8. Estado actual
@@ -282,7 +309,7 @@ Vienen de la experiencia con el stack; se confirman al construir.
 | | |
 |---|---|
 | **Fases completas** | ✅ Fase 0 (2026-11-03) |
-| **Siguiente** | Fase 1 parte 1: esquema y `reservar()`; la migración se corre en el SQL Editor de la BD del compañero |
+| **Siguiente** | ⏸️ Checkpoint con Fernando; luego, la Fase 1 parte 2 (UI de la reserva con `/impeccable craft`) |
 | **Gates** | 🟢 G1 stack · 🟢 G2 cobro simulado · 🟢 G3 alcance y orden del PoC |
 | **Deuda conocida** | — |
 
@@ -355,3 +382,40 @@ reescribe.** Cada entrada lleva: las decisiones confirmadas con Fernando, lo que
   - `.env` ignorado por git.
 - **⚠️ Caveats:** la prueba se hizo con un script de Node que lee el `.env`, no desde una página de la app, porque
   todavía ninguna ruta usa Supabase. La primera ruta que lo use es la de la Fase 1.
+
+### 2026-11-03: Fase 1, parte 1 (esquema, `reserve_spots()` y form action)
+
+- **Decisiones confirmadas con Fernando:**
+  - Las migraciones se aplican con **Drizzle** (lo pidió él), con la cadena del Session pooler en `DIRECT_URL`.
+  - La secret key del proyecto va en el `.env`, solo para el smoke.
+- **Decisiones técnicas (sin gate):**
+  - Drizzle Kit solo corre SQL; la app sigue con `supabase-js` y no hay un esquema de Drizzle en TypeScript.
+  - Se agregó la tabla `staff`: sin ella, cualquier cuenta de Supabase Auth podría leer los clientes.
+  - Funciones `security definer` para el público (`events_with_availability()` y `reserve_spots()`); clientes y
+    reservas, solo con RLS del equipo.
+  - `reserve_spots()` bloquea la fila del evento (`for update`), así dos reservas al mismo tiempo se forman en fila.
+  - Un cliente se reconoce por su WhatsApp normalizado a E.164 y no se le cambia el nombre.
+  - El evento de ejemplo ("Noche de cata", sábado 7 de noviembre a las 20:00, $150 MXN, 35 lugares) es inventado
+    para la demo y está marcado como tal.
+- **Qué se hizo:**
+  - `supabase/migrations/0000_reservas_con_cupo.sql` con su journal, `drizzle.config.ts` y `npm run db:migrate`.
+  - `src/lib/events.ts`, `src/lib/phone.ts` y la form action en `src/routes/eventos/[id]/`, con una página provisional.
+  - `scripts/smoke.mjs` y `npm run smoke`.
+  - En los docs, `reservar()` pasó a llamarse `reserve_spots()`.
+- **Verificación:**
+  - Consultado en la BD: 4 tablas con RLS, 3 funciones `security definer`, 6 políticas, el evento de ejemplo y 1
+    migración registrada por Drizzle.
+  - `npm run smoke -- --app` con **14/14 PASS**: cupo, rechazo con los lugares que quedan, 10 reservas al mismo tiempo
+    (3 entran, 7 se rechazan), RLS de lectura e inserción, cliente reutilizado, form action con 409 y 200, y
+    limpieza.
+  - Después del smoke, la BD quedó con 1 evento, 0 clientes y 0 reservas.
+  - Normalización de teléfonos: 7/7 casos. `npm run check` sin errores; la página del evento responde 200 y la de un
+    evento inexistente, 404.
+- **🐛 Encontrados y arreglados:**
+  - El SQL pegado en el SQL Editor no llegó a la BD; se migró con Drizzle.
+  - Los imports `#lib/x` sin extensión no resolvían en `svelte-check`.
+  - El smoke gastaba el último lugar antes de probar la form action y daba un falso FAIL; se reordenó.
+- **⚠️ Caveats:**
+  - La página de `/eventos/[id]` es provisional (sin diseño) y no se probó en el navegador; eso llega con la parte 2.
+  - Las respuestas de error todavía son códigos (`no_capacity`, `invalid_phone`), sin la voz de BUNKER.
+  - Falta crear la cuenta del equipo en `staff` (Fase 2).

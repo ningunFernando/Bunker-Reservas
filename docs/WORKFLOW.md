@@ -115,7 +115,7 @@ saltan, pero se hacen en minutos.
 - **El reloj manda.** Cada fase tiene un bloque de tiempo en el `ROADMAP.md`. Si una fase se pasa más de 5 minutos,
   avisa a Fernando y propón qué recortar; no recortes en silencio.
 - **Una sola ronda de preguntas** por fase, con un default propuesto para cada una.
-- **Checkpoints en vez de revisiones largas:** al terminar la parte 1 de la Fase 1 (esquema y `reservar()`), te
+- **Checkpoints en vez de revisiones largas:** al terminar la parte 1 de la Fase 1 (esquema y `reserve_spots()`), te
   detienes, muestras el smoke y esperas el "sigue" de Fernando.
 - **Verificación mínima:** el smoke del camino feliz (reservar, ver que bajan los lugares e intentar pasarse del
   cupo) más una prueba en el navegador en vista móvil (375 × 812). Lo que no se verificó se dice.

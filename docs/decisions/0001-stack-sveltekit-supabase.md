@@ -25,7 +25,7 @@ frameworks de frontend distintos; se le preguntó cómo combinarlos y eligió Sv
 ## Decisión
 
 Se usa **SvelteKit + TypeScript con Supabase (Postgres y Auth), desplegado en Vercel** con
-`@sveltejs/adapter-vercel`. **Next.js no se usa.** El cupo se garantiza en Postgres con una función `reservar()` que
+`@sveltejs/adapter-vercel`. **Next.js no se usa.** El cupo se garantiza en Postgres con una función `reserve_spots()` que
 revisa y aparta los lugares en una sola transacción.
 
 ## Consecuencias

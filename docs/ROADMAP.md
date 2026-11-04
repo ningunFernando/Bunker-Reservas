@@ -3,7 +3,7 @@
 > Última actualización: 2026-11-03 · Fases **0 ✅** · **1 ⬅️** · Tiempo total: **60 min** · 🟢 G1, G2 y G3 cerrados
 
 Cada fase es un bloque que se puede commitear, tiene un **bloque de tiempo** y un criterio de salida ("hecho
-cuando"). La Fase 1 se entrega **por partes**: el agente se detiene después del esquema y `reservar()` para un
+cuando"). La Fase 1 se entrega **por partes**: el agente se detiene después del esquema y `reserve_spots()` para un
 checkpoint corto con Fernando (`WORKFLOW.md § Modo hackatón`).
 
 Marcas: ✅ hecha · ⬅️ en curso · 🔴 gate abierto · 🟢 gate cerrado · ⏸️ diferida
@@ -27,13 +27,13 @@ El orden de las fases 1 y 2 y la sección "Si sobra tiempo" los confirmó Fernan
 
 ## Fase 1: Reserva de eventos con cupo (min 10–40) ⬅️
 
-### Parte 1: esquema y `reservar()` (min 10–25)
+### Parte 1: esquema y `reserve_spots()` (min 10–25) ✅
 
-- [ ] Migración en `supabase/migrations/` con `events`, `customers` y `reservations` (`CONTEXTO.md § 4.1`) y RLS
+- [x] Migración en `supabase/migrations/` (aplicada con Drizzle, `npm run db:migrate`) con `events`, `customers` y `reservations` (`CONTEXTO.md § 4.1`) y RLS
   prendido con sus políticas
-- [ ] Función `reservar()` que aparta lugares en una transacción y rechaza si no caben
-- [ ] Un evento de ejemplo (cover y cupo de 35)
-- [ ] Form action de SvelteKit que llama a `reservar()`
+- [x] Función `reserve_spots()` que aparta lugares en una transacción y rechaza si no caben
+- [x] Un evento de ejemplo (cover y cupo de 35)
+- [x] Form action de SvelteKit que llama a `reserve_spots()`
 
 **Hecho cuando:** el smoke da `N/N PASS`: reservar baja los lugares que quedan, pasarse del cupo da error con los
 lugares que quedan, y dos reservas al mismo tiempo no pasan de 35. Los datos `SMOKE` se borran. → **Checkpoint con
