@@ -190,8 +190,9 @@ npm run smoke:panel -- --app http://localhost:5173   # smoke del panel: acceso, 
 sh scripts/deploy-vercel.sh                    # ⏸️ deploy a Vercel; lo corre Fernando (el permiso automático no deja al agente)
 ```
 
-El código vive en [`ningunFernando/Bunker-Reservas`](https://github.com/ningunFernando/Bunker-Reservas) (privado,
-rama `main`, remoto `origin`). El `.env` nunca sube: está en `.gitignore`.
+El código vive en [`ningunFernando/Bunker-Reservas`](https://github.com/ningunFernando/Bunker-Reservas) (**público**,
+rama `main`, remoto `origin`). El `.env` nunca sube: está en `.gitignore`. Como cualquiera lo lee, revisa que no
+lleve secretos ni datos reales de clientes antes de cada push.
 
 La BD es un proyecto de Supabase de un compañero del equipo, que **no está en la cuenta de Fernando**: el MCP de
 Supabase no llega a ella. Las migraciones se aplican con `npm run db:migrate`, no pegándolas en el SQL Editor.
@@ -579,3 +580,11 @@ reescribe.** Cada entrada lleva: las decisiones confirmadas con Fernando, lo que
     tokens de GitHub o Vercel: ninguno. Solo se versiona `.env.example`, con valores falsos.
   - En GitHub: visibilidad `PRIVATE`, `origin/main` en el mismo commit que la `main` local y `.env` no existe (404).
 - **⚠️ Caveats:** el encabezado de `README.md` todavía dice "Estado: ⬅️ Fase 0" (deuda de docs, no se tocó).
+
+### 2026-11-17: repo público
+
+- **Decisiones confirmadas con Fernando:** el repo `Bunker-Reservas` pasa a público ("hazlo público").
+- **Qué se hizo:** `gh repo edit --visibility public`; `README.md` y §5 ya dicen "público", y §5 pide revisar secretos
+  y datos de clientes antes de cada push.
+- **Verificación:** `gh repo view` responde `PUBLIC` y la página del repo responde 200 sin sesión. El historial ya se
+  había revisado sin secretos en la entrada anterior.

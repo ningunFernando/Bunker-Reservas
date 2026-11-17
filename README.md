@@ -8,7 +8,7 @@ Un sistema para que BUNKER, un bar escondido de cerveza artesanal, reciba reserv
 - **Agentes y desarrolladores:** el manual operativo está en [`AGENTS.md`](AGENTS.md).
 - **Contexto y decisiones:** [`docs/CONTEXTO.md`](docs/CONTEXTO.md).
 - **Fases y avance:** [`docs/ROADMAP.md`](docs/ROADMAP.md).
-- **Repositorio:** [ningunFernando/Bunker-Reservas](https://github.com/ningunFernando/Bunker-Reservas) (privado).
+- **Repositorio:** [ningunFernando/Bunker-Reservas](https://github.com/ningunFernando/Bunker-Reservas) (público).
 
 ## Arrancar
 
