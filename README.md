@@ -8,10 +8,12 @@ Un sistema para que BUNKER, un bar escondido de cerveza artesanal, reciba reserv
 - **Agentes y desarrolladores:** el manual operativo está en [`AGENTS.md`](AGENTS.md).
 - **Contexto y decisiones:** [`docs/CONTEXTO.md`](docs/CONTEXTO.md).
 - **Fases y avance:** [`docs/ROADMAP.md`](docs/ROADMAP.md).
+- **Repositorio:** [ningunFernando/Bunker-Reservas](https://github.com/ningunFernando/Bunker-Reservas) (privado).
 
 ## Arrancar
 
 ```bash
+git clone https://github.com/ningunFernando/Bunker-Reservas.git && cd Bunker-Reservas
 npm install
 cp .env.example .env   # y pon la URL y la llave publicable de Supabase
 npm run dev

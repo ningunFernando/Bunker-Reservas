@@ -190,6 +190,9 @@ npm run smoke:panel -- --app http://localhost:5173   # smoke del panel: acceso, 
 sh scripts/deploy-vercel.sh                    # ⏸️ deploy a Vercel; lo corre Fernando (el permiso automático no deja al agente)
 ```
 
+El código vive en [`ningunFernando/Bunker-Reservas`](https://github.com/ningunFernando/Bunker-Reservas) (privado,
+rama `main`, remoto `origin`). El `.env` nunca sube: está en `.gitignore`.
+
 La BD es un proyecto de Supabase de un compañero del equipo, que **no está en la cuenta de Fernando**: el MCP de
 Supabase no llega a ella. Las migraciones se aplican con `npm run db:migrate`, no pegándolas en el SQL Editor.
 
@@ -564,3 +567,15 @@ reescribe.** Cada entrada lleva: las decisiones confirmadas con Fernando, lo que
   - La demo depende de que el servidor de desarrollo siga corriendo en esta Mac (`npm run dev`).
   - En Vercel no existe todavía el proyecto `bunker-reservas` (revisado con `vercel project ls`).
   - Fernando no ha entrado al panel con sesión en el navegador.
+
+### 2026-11-17: repo en GitHub
+
+- **Decisiones confirmadas con Fernando:** el repo se llama `Bunker-Reservas`.
+- **Decisiones técnicas (sin gate):** privado por default, porque Fernando no dijo la visibilidad; hacerlo público es
+  `gh repo edit ningunFernando/Bunker-Reservas --visibility public --accept-visibility-change-consequences`.
+- **Qué se hizo:** `gh repo create` con remoto `origin` y `main` subida; el enlace quedó en `README.md` y en §5.
+- **Verificación:**
+  - Antes de subir, se buscaron en todo el historial llaves de Supabase, JWT, cadenas de conexión con contraseña y
+    tokens de GitHub o Vercel: ninguno. Solo se versiona `.env.example`, con valores falsos.
+  - En GitHub: visibilidad `PRIVATE`, `origin/main` en el mismo commit que la `main` local y `.env` no existe (404).
+- **⚠️ Caveats:** el encabezado de `README.md` todavía dice "Estado: ⬅️ Fase 0" (deuda de docs, no se tocó).
